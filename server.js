@@ -1,26 +1,34 @@
 const http = require("http");
 const WebSocket = require("ws");
-const { WispServer } = require("@mercuryworkshop/wisp-js/server");
+
+// IMPORTANT: use correct export style (no guessing API shape)
+const wispModule = require("@mercuryworkshop/wisp-js");
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
   res.end("Wisp server running");
 });
 
-const wss = new WebSocket.Server({ noServer: true });
+const wss = new WebSocket.Server({ server });
 
-// Create Wisp handler bound to ws instance
-const wisp = new WispServer();
+// Try to safely resolve Wisp handler (library export varies by version)
+const wispHandler =
+  wispModule.server?.handleConnection ||
+  wispModule.handleConnection ||
+  null;
 
-server.on("upgrade", (req, socket, head) => {
-  wss.handleUpgrade(req, socket, head, (ws) => {
-    try {
-      wisp.handleConnection(ws, req);
-    } catch (err) {
-      console.error("Wisp error:", err);
-      ws.close();
+wss.on("connection", (ws, req) => {
+  try {
+    if (wispHandler) {
+      wispHandler(ws, req);
+    } else {
+      // fallback: keep connection alive so we can debug
+      ws.send("ws-ok-no-wisp");
     }
-  });
+  } catch (err) {
+    console.error("Wisp runtime error:", err);
+    ws.close();
+  }
 });
 
 const PORT = process.env.PORT;

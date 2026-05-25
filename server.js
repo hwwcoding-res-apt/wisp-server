@@ -1,18 +1,25 @@
 const http = require("http");
-const { server } = require("wisp-server-node");
+const WebSocket = require("ws");
 
-const app = http.createServer((req, res) => {
+const server = http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
   res.end("Wisp server running");
 });
 
-app.on("upgrade", (req, socket, head) => {
-  // accept all upgrade requests
-  server.handleUpgrade(req, socket, head);
+const wss = new WebSocket.Server({ server });
+
+wss.on("connection", (ws, req) => {
+  console.log("WebSocket connected");
+
+  ws.on("message", (msg) => {
+    console.log("Message:", msg.toString());
+  });
+
+  ws.send("connected");
 });
 
 const PORT = process.env.PORT;
 
-app.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log("Listening on", PORT);
 });

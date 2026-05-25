@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "wisp-server-node": "^1.1.8",
+    "@mercuryworkshop/wisp-js": "^0.4.1",
     "ws": "^8.21.0"
   }
 }

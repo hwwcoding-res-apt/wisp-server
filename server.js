@@ -1,17 +1,16 @@
 const http = require("http");
-const { server: wispServer } = require("@mercuryworkshop/wisp-js/server");
+const WebSocket = require("ws");
 
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("Wisp-js server running");
+  res.end("OK");
 });
 
-server.on("upgrade", (req, socket, head) => {
-  wispServer.handleUpgrade(req, socket, head);
+const wss = new WebSocket.Server({ server });
+
+wss.on("connection", (ws) => {
+  ws.send("hello");
 });
 
-const PORT = process.env.PORT;
-
-server.listen(PORT, "0.0.0.0", () => {
-  console.log("Listening on", PORT);
+server.listen(process.env.PORT, "0.0.0.0", () => {
+  console.log("running");
 });

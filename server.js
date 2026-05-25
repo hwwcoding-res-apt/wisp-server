@@ -7,10 +7,11 @@ const app = http.createServer((req, res) => {
 });
 
 app.on("upgrade", (req, socket, head) => {
+  // accept all upgrade requests
   server.handleUpgrade(req, socket, head);
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Listening on", PORT);

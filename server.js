@@ -1,16 +1,28 @@
 const http = require("http");
-const WebSocket = require("ws");
+const { server: wispServer } = require("@mercuryworkshop/wisp-js/server");
 
 const server = http.createServer((req, res) => {
-  res.end("OK");
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("Wisp-js ready");
 });
 
-const wss = new WebSocket.Server({ server });
+// Attach Wisp upgrade handler safely
+server.on("upgrade", (req, socket, head) => {
+  if (!wispServer.handleUpgrade) {
+    socket.destroy();
+    return;
+  }
 
-wss.on("connection", (ws) => {
-  ws.send("hello");
+  try {
+    wispServer.handleUpgrade(req, socket, head);
+  } catch (err) {
+    console.error("Wisp upgrade error:", err);
+    socket.destroy();
+  }
 });
 
-server.listen(process.env.PORT, "0.0.0.0", () => {
-  console.log("running");
+const PORT = process.env.PORT;
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log("Listening on", PORT);
 });
